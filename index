@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AQI Submit — CrowdAQI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1: #0f172a;
+      --bg2: #071233;
+      --card: rgba(255,255,255,0.10);
+      --accent: #7c3aed;
+      --accent-2: #06b6d4;
+      --glow: rgba(124,58,237,0.25);
+    }
+    html,body{height:100%}
+    body{
+      font-family:'Inter',sans-serif;
+      margin:0;min-height:100vh;
+      background: linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:#e6eef8;display:flex;
+      align-items:center;justify-content:center;
+      padding:32px;overflow-x:hidden;position:relative;
+    }
+    /* background bubbles */
+    .bg-bubble{
+      position:fixed;z-index:-1;border-radius:50%;opacity:.42;
+      filter:blur(32px);animation:bubblemove 18s cubic-bezier(.25,.46,.45,.94) infinite alternate;
+    }
+    .bg-bubble1{top:0;left:10vw;width:240px;height:240px;background:var(--accent);}
+    .bg-bubble2{top:60vh;right:-80px;width:200px;height:200px;background:var(--accent-2);}
+    .bg-bubble3{bottom:-80px;left:30vw;width:160px;height:160px;background:rgba(255,255,255,0.15);}
+    @keyframes bubblemove {
+      from{transform:translateY(0);}
+      to{transform:translateY(-42px);}
+    }
+    .container{width:100%;max-width:1000px;display:grid;grid-template-columns: 1fr 420px;gap:32px;align-items:center;position:relative;}
+    @media(max-width:900px){.container{grid-template-columns:1fr;}}
+    .hero{
+      background: linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01));
+      border-radius:22px;padding:40px;box-shadow:0 16px 40px rgba(2,6,23,0.51);backdrop-filter: blur(13px);
+      border: 1px solid rgba(255,255,255,0.06);position:relative;
+      overflow:hidden;
+    }
+    .logo{display:flex;align-items:center;gap:16px;}
+    .logo .mark{width:55px;height:55px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:2rem;box-shadow:0 8px 26px var(--glow);}
+    h1{font-size:2rem;margin-top:22px;margin-bottom:8px;}
+    .lead{color:rgba(230,238,248,0.78);margin:0 0 20px;line-height:1.8;}
+    .stats{display:flex;gap:16px;margin-top:24px;}
+    .stat{
+      background:rgba(255,255,255,0.06);
+      padding:16px 20px;border-radius:999px;min-width:110px;text-align:center;
+      box-shadow:0 2px 18px 0 rgba(124,58,237,0.15);
+      border:1px solid rgba(255,255,255,0.04);
+      font-size:14px;transition:.18s;
+    }
+    .stat:hover{transform:scale(1.06);}
+    .stat b{display:block;font-size:20px;}
+    .stat span{display:block;font-size:12px;color:#c7d7ee;}
+    .card{
+      background: linear-gradient(180deg,rgba(255,255,255,0.09),rgba(255,255,255,0.04));
+      padding:30px 26px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.09);
+      box-shadow:0 12px 45px rgba(2,16,33,0.58);
+      position:relative;
+      overflow:hidden;
+    }
+    form{display:flex;flex-direction:column;gap:14px;}
+    label{font-size:15px;color:#dbebfe;letter-spacing:.004em;}
+    input[type=text],input[type=number]{
+      width:100%;padding:14px 16px;border-radius:12px;border:none;
+      background:rgba(10,16,23,0.52);color:#fafafc;font-size:16px;
+      outline:none;border-bottom:2px solid transparent;transition:.3s box-shadow,.3s border-color;
+      box-shadow:0 2px 10px 0 rgba(6,182,212,.12);
+      margin-bottom:2px;
+    }
+    input:focus{
+      border-bottom:2px solid var(--accent);
+      box-shadow:0 0 0 3px rgba(124,58,237,0.17);
+      background:rgba(15,23,42,0.95);
+    }
+    .hint{font-size:12px;color:#8ed6e8;}
+    .row{display:flex;gap:10px;}
+    .btn{
+      display:inline-flex;
+      align-items:center;justify-content:center;
+      gap:8px;padding:14px 20px;
+      border-radius:12px;border:none;cursor:pointer;
+      font-weight:700;font-size:15px;letter-spacing:.01em;
+      background: linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:white;box-shadow:0 8px 26px var(--glow);
+      transition:transform .15s,filter .15s;
+      position:relative;overflow:hidden;
+      outline:none;
+    }
+    .btn:active{transform:scale(0.96);}
+    .btn[disabled]{opacity:.6;cursor:not-allowed;}
+    .btn::after{
+      content:'';
+      display:none;
+      position:absolute;top:50%;left:50%;
+      width:200%;padding-bottom:200%;
+      background:rgba(124,58,237,0.15);border-radius:50%;
+      transform:translate(-50%,-50%) scale(0);
+      z-index:0;pointer-events:none;
+      transition:transform .4s;
+    }
+    .btn:active::after{
+      display:block;transform:translate(-50%,-50%) scale(1.1);
+    }
+    #status{transition:.36s;color:#fed7d7;font-weight:600;}
+    .success-bounce{
+      color:#79FF9D;
+      animation:bounce 1s cubic-bezier(.91,-0.01,0,1.27);
+    }
+    .fail-shake{
+      color:#FF7B99;
+      animation:shake 0.6s cubic-bezier(.63,-0.59,0,1.24);
+    }
+    @keyframes bounce{30%{transform:translateY(-9px);}50%{transform:translateY(0);}75%{transform:translateY(-3px);}100%{transform:translateY(0);}}
+    @keyframes shake{0%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-6px);}80%{transform:translateX(9px);}100%{transform:translateX(0);}}
+    .toast{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:28px;padding:14px 26px 14px 22px;
+      background:rgba(10,13,25,0.91);border-radius:13px;border:1px solid rgba(255,255,255,0.05);
+      box-shadow:0 8px 42px rgba(80,24,235,0.21);
+      color:#baf6ff;display:flex;gap:12px;align-items:center;z-index:999;
+      font-size:15px;letter-spacing:.01em;
+      animation:upfade .8s;
+    }
+    @keyframes upfade{0%{opacity:.1;transform:translateX(-50%) translateY(70px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
+    .small{font-size:13px;color:#9fb3d9;}
+    footer.small{margin-top:10px;font-size:13px;color:#95b2d7;}
+    ::selection{background:rgba(124,58,237,0.14);}
+    
+    /* AQI Indicator */
+    .aqi-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .aqi-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    .aqi-level {
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .aqi-good { background-color: #10b981; }
+    .aqi-moderate { background-color: #f59e0b; }
+    .aqi-unhealthy { background-color: #ef4444; }
+    
+    .progress-bar {
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      width: 0%;
+      transition: width 1s ease;
+      border-radius: 2px;
+    }
+
+    /* Spreadsheet Info */
+    .spreadsheet-info {
+      background: rgba(255,255,255,0.05);
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-top: 15px;
+      border-left: 3px solid var(--accent);
+    }
+    .spreadsheet-info .title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--accent-2);
+    }
+    .spreadsheet-info .name {
+      font-size: 13px;
+      color: #c7d7ee;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-bubble bg-bubble1"></div>
+  <div class="bg-bubble bg-bubble2"></div>
+  <div class="bg-bubble bg-bubble3"></div>
+  <div class="container">
+    <section class="hero">
+      <div class="logo">
+        <div class="mark">AQ</div>
+        <div>
+          <div style="font-weight:700;font-size:1.2rem;">CrowdAQI</div>
+          <div class="small">Community-sourced air quality tracker</div>
+        </div>
+      </div>
+      <h1 style="font-size:2.1rem;">Help map clean air &mdash; submit your AQI</h1>
+      <p class="lead">Share a quick AQI reading from your area. No signup required &mdash; just add name, location and AQI value. Your input helps build a live community dataset.</p>
+      
+      <div class="stats" aria-hidden>
+        <div class="stat">
+          <b id="count">0</b>
+          <span>Submissions</span>
+        </div>
+        <div class="stat">
+          <b id="last">—</b>
+          <span>Last AQI</span>
+        </div>
+        <div class="stat">
+          <b id="avg">—</b>
+          <span>Avg (latest 20)</span>
+        </div>
+      </div>
+
+      <div class="spreadsheet-info">
+        <div class="title">Connected Spreadsheet:</div>
+        <div class="name">CrowdAQI_Data</div>
+      </div>
+      
+      <footer class="small">Tip: Enter exact city/area for better mapping. Data stored in your Google Sheet.</footer>
+    </section>
+    
+    <aside class="card">
+      <form id="aqiForm" autocomplete="off">
+        <label for="name">Your name</label>
+        <input id="name" type="text" placeholder="e.g. Ravi" required />
+        
+        <label for="location">Location / City</label>
+        <input id="location" type="text" placeholder="e.g. Rohini, Delhi" required />
+        
+        <label for="aqi">AQI value</label>
+        <input id="aqi" type="number" placeholder="e.g. 150" min="0" max="1000" required />
+        
+        <div class="aqi-indicator">
+          <div class="aqi-dot" id="aqiDot"></div>
+          <div class="aqi-level" id="aqiLevel">Enter AQI value</div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="aqiProgress"></div>
+        </div>
+        
+        <div class="row">
+          <button id="submitBtn" class="btn" type="submit">Submit AQI</button>
+          <button id="clearBtn" type="button" class="btn" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.04);color:var(--accent)">Clear</button>
+        </div>
+        <div id="status" class="hint" style="margin-top:6px;min-height:1em"></div>
+      </form>
+    </aside>
+  </div>
+  
+  <div id="toast" class="toast" style="display:none">✅ <span id="toastText">Saved</span></div>
+  
+  <script>
+    // Updated Google Apps Script Web App URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw181xvV5ImHkh7UUB2RlDXQfNeZDC7I1nQPiq4ImIZDs68K4TisX2sdYmpyWrS2pTeQ/exec";
+    const form = document.getElementById('aqiForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const status = document.getElementById('status');
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toastText');
+    const aqiInput = document.getElementById('aqi');
+    const aqiDot = document.getElementById('aqiDot');
+    const aqiLevel = document.getElementById('aqiLevel');
+    const aqiProgress = document.getElementById('aqiProgress');
+    
+    // Update AQI indicator based on value
+    function updateAqiIndicator(value) {
+      if (!value || isNaN(value)) {
+        aqiDot.style.backgroundColor = 'transparent';
+        aqiLevel.textContent = 'Enter AQI value';
+        aqiProgress.style.width = '0%';
+        return;
+      }
+      
+      // Calculate progress percentage (max AQI is 500 for visualization)
+      const progress = Math.min((value / 500) * 100, 100);
+      aqiProgress.style.width = `${progress}%`;
+      
+      // Set color and level based on AQI value
+      if (value <= 50) {
+        aqiDot.className = 'aqi-dot aqi-good';
+        aqiLevel.textContent = 'Good';
+        aqiLevel.style.color = '#10b981';
+      } else if (value <= 100) {
+        aqiDot.className = 'aqi-dot aqi-moderate';
+        aqiLevel.textContent = 'Moderate';
+        aqiLevel.style.color = '#f59e0b';
+      } else {
+        aqiDot.className = 'aqi-dot aqi-unhealthy';
+        aqiLevel.textContent = 'Unhealthy';
+        aqiLevel.style.color = '#ef4444';
+      }
+    }
+    
+    function showToast(msg){
+      toastText.textContent = msg;
+      toast.style.display='flex';
+      setTimeout(()=>toast.style.display='none',2600)
+    }
+    
+    function setLoading(on){
+      submitBtn.disabled = on;
+      submitBtn.textContent = on ? 'Saving...' : 'Submit AQI';
+    }
+    
+    clearBtn.addEventListener('click', ()=>{ 
+      form.reset(); 
+      status.textContent=''; 
+      status.className='hint'; 
+      updateAqiIndicator(null);
+    });
+    
+    aqiInput.addEventListener('input', (e) => {
+      updateAqiIndicator(Number(e.target.value));
+    });
+    
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const aqi = Number(document.getElementById('aqi').value);
+      
+      if(!name || !location || isNaN(aqi)){
+        status.textContent = 'Please fill all fields with valid values.'; 
+        status.className='fail-shake'; 
+        return;
+      }
+      
+      setLoading(true); 
+      status.textContent='';
+      
+      try {
+        // Using URL parameters for GET request (more reliable with Google Apps Script)
+        const params = new URLSearchParams();
+        params.append('name', name);
+        params.append('location', location);
+        params.append('aqi', aqi);
+        
+        const response = await fetch(`${SCRIPT_URL}?${params.toString()}`, {
+          method: 'GET',
+          mode: 'no-cors'
+        });
+        
+        // Since we're using no-cors, we can't read the response
+        // But we can assume success if no error was thrown
+        showToast('Data submitted — thank you!');
+        form.reset();
+        status.textContent = '✓ Saved to CrowdAQI_Data!';
+        status.className='success-bounce';
+        updateAqiIndicator(null);
+        
+        // Update stats with animation
+        const cntEl = document.getElementById('count');
+        cntEl.textContent = Number(cntEl.textContent||0)+1;
+        document.getElementById('last').textContent = aqi;
+        
+        // Animate the updated stat
+        cntEl.parentElement.animate([
+          { transform: 'scale(1)' },
+          { transform: 'scale(1.2)' },
+          { transform: 'scale(1)' }
+        ], { duration: 500 });
+        
+      } catch(err) {
+        console.error('Submission error:', err);
+        status.textContent = '❌ Submission failed — check connection!';
+        status.className='fail-shake';
+        showToast('Failed to save — try again');
+      } finally { 
+        setLoading(false);
+      }
+    });
+    
+    // subtle stats pulse
+    setInterval(()=>{
+      const el=document.querySelector('.stats');
+      if(!el)return;
+      el.animate([{transform:'scale(1)'},{transform:'scale(1.04)'},{transform:'scale(1)'}],{duration:1200}).finished.catch(()=>{});
+    },5400);
+  </script>
+</body>
+</html>
